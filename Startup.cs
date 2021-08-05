@@ -25,39 +25,44 @@ namespace TesteJWT
         public void ConfigureServices(IServiceCollection services)
         {
             // Declarando a autenticação JWT do tipo Bearer com algumas configurações
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
+            //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = "https://github.com/Jhow-A",
-                        ValidAudience = "https://github.com/Jhow-A",
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecurityKey"]))
-                    };
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = "https://github.com/Jhow-A",
+                    ValidAudience = "https://github.com/Jhow-A",
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecurityKey"]))
+                };
 
-                    options.Events = new JwtBearerEvents 
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
                     {
-                        OnAuthenticationFailed = context => 
-                        {
-                            Console.WriteLine($"Token inválido: {context.Exception.Message}");
-                            return Task.CompletedTask;
-                        },
-                        OnTokenValidated = context =>
-                        {
-                            Console.WriteLine($"Token válido: {context.SecurityToken}");
-                            return Task.CompletedTask;
-                        },
-                        OnForbidden = context =>
-                        {
-                            Console.WriteLine($"Credenciais inválidas");
-                            return Task.CompletedTask;
-                        },
-                    };
-                });
+                        Console.WriteLine($"Token inválido: {context.Exception.Message}");
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        Console.WriteLine($"Token válido: {context.SecurityToken}");
+                        return Task.CompletedTask;
+                    },
+                    OnForbidden = context =>
+                    {
+                        Console.WriteLine($"Credenciais inválidas");
+                        return Task.CompletedTask;
+                    },
+                };
+            });
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -80,6 +85,7 @@ namespace TesteJWT
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

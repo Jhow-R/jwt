@@ -25,11 +25,11 @@ namespace TesteJWT.Controllers
         [HttpPost]
         public IActionResult RequestToToken([FromBody] User user)
         {
-            if (user.Usercode.Equals("batman") && user.Password.Equals("numsey"))
+            if (user.Username.Equals("batman") && user.Password.Equals("numsey"))
             {
                 var claims = new[]
                 {
-                    new Claim(ClaimTypes.Name, user.Usercode)
+                    new Claim(ClaimTypes.Name, user.Username)
                     //new Claim(ClaimTypes.Role, "Admin")
                 };
 
